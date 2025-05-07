@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart TV Remote</title>
+  <style>
+    body {
+      background: #222;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .remote {
+      background: #333;
+      border-radius: 32px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+      width: 320px;
+      padding: 32px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+    }
+    .power {
+      background: #e74c3c;
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 48px;
+      height: 48px;
+      font-size: 1.5rem;
+      margin-bottom: 8px;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    .dpad {
+      display: grid;
+      grid-template-columns: 60px 60px 60px;
+      grid-template-rows: 60px 60px 60px;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .dpad button {
+      background: #444;
+      color: #fff;
+      border: none;
+      border-radius: 16px;
+      font-size: 1.2rem;
+      cursor: pointer;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+      transition: background 0.2s;
+    }
+    .dpad .up { grid-column: 2; grid-row: 1; }
+    .dpad .left { grid-column: 1; grid-row: 2; }
+    .dpad .select { grid-column: 2; grid-row: 2; background: #666; font-weight: bold; }
+    .dpad .right { grid-column: 3; grid-row: 2; }
+    .dpad .down { grid-column: 2; grid-row: 3; }
+    .volume {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .volume button {
+      background: #444;
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      width: 80px;
+      height: 36px;
+      font-size: 1rem;
+      cursor: pointer;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+      margin: 2px 0;
+    }
+    .row {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 8px;
+      justify-content: center;
+    }
+    .mute, .back {
+      background: #444;
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      width: 80px;
+      height: 36px;
+      font-size: 1rem;
+      cursor: pointer;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+    }
+    .label {
+      color: #bbb;
+      font-size: 0.9rem;
+      margin-bottom: 2px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div id="connect-modal" style="position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:10;">
+    <div style="background:#222;padding:32px 24px;border-radius:16px;box-shadow:0 4px 24px #000;color:#fff;display:flex;flex-direction:column;align-items:center;gap:16px;min-width:300px;">
+      <h2 style="margin:0 0 8px 0;">Connect to your TV</h2>
+      <input id="tv-address" type="text" placeholder="TV IP address or name" style="padding:8px 12px;border-radius:8px;border:none;width:100%;font-size:1rem;" />
+      <button id="connect-btn" style="margin-top:8px;padding:8px 24px;border-radius:8px;background:#4caf50;color:#fff;border:none;font-size:1rem;cursor:pointer;">Connect</button>
+      <div id="connect-status" style="color:#f55;font-size:0.95rem;display:none;"></div>
+    </div>
+  </div>
+  <div class="remote" style="filter:blur(2px);pointer-events:none;" id="remote-ui">
+    <button class="power" data-command="power">⏻</button>
+    <div class="label">Power</div>
+    <div class="dpad">
+      <button class="up" data-command="up">▲</button>
+      <button class="left" data-command="left">◀</button>
+      <button class="select" data-command="select">OK</button>
+      <button class="right" data-command="right">▶</button>
+      <button class="down" data-command="down">▼</button>
+    </div>
+    <div class="label">Navigation</div>
+    <div class="row">
+      <button class="back" data-command="back">Back</button>
+      <button class="mute" data-command="mute">Mute</button>
+    </div>
+    <div class="volume">
+      <button class="vol-up" data-command="vol_up">Vol +</button>
+      <button class="vol-down" data-command="vol_down">Vol -</button>
+    </div>
+    <div class="label">Volume</div>
+  </div>
+  <script>
+    let tvAddress = null;
+    const connectModal = document.getElementById('connect-modal');
+    const connectBtn = document.getElementById('connect-btn');
+    const tvAddressInput = document.getElementById('tv-address');
+    const connectStatus = document.getElementById('connect-status');
+    const remoteUI = document.getElementById('remote-ui');
+
+    connectBtn.onclick = function() {
+      const addr = tvAddressInput.value.trim();
+      if (!addr) {
+        connectStatus.textContent = 'Please enter your TV\'s IP address or name.';
+        connectStatus.style.display = 'block';
+        return;
+      }
+      // Simulate connection (replace with real connection logic)
+      connectStatus.style.display = 'none';
+      connectBtn.disabled = true;
+      connectBtn.textContent = 'Connecting...';
+      setTimeout(() => {
+        tvAddress = addr;
+        connectModal.style.display = 'none';
+        remoteUI.style.filter = 'none';
+        remoteUI.style.pointerEvents = 'auto';
+      }, 1000);
+    };
+
+    function sendCommand(command) {
+      fetch(`http://10.0.0.25/remote/event`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ command }),
+      })
+      .then(response => response.json())
+      .then(data => console.log('Success:', data))
+      .catch(error => console.error('Error:', error));
+    }
+
+    // Add event listeners to all remote buttons
+    document.querySelectorAll('.remote button[data-command]').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const command = this.getAttribute('data-command');
+        sendCommand(command);
+        // Visual feedback
+        btn.classList.add('pressed');
+        setTimeout(() => btn.classList.remove('pressed'), 150);
+      });
+    });
+
+    // Add pressed style
+    const style = document.createElement('style');
+    style.textContent = `.remote button.pressed { background: #2196f3 !important; color: #fff !important; }`;
+    document.head.appendChild(style);
+  </script>
+</body>
+</html> 
